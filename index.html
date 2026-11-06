@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collection Wikimasters</title>
+<style>
+:root{--paper:#0c1322;--paper2:#1c2840;--ink:#e8eef9;--mute:#8d9dba;--walnut:#d9998a;--walnut2:#f0b9a0;--green:#5fd0a0;--green2:#3f9f7d;--none:#27344f;--card:#141d31}
+*{box-sizing:border-box}
+body{
+    margin:0; font-family:Georgia,'Linux Libertine','Times New Roman',serif;
+    color:var(--ink); background:var(--paper);
+    background-image:radial-gradient(ellipse at 80% 0,#3b2f5a66 0,#0000 55%),radial-gradient(ellipse at 10% 100%,#1f3a5c44 0,#0000 50%);
+    display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+}
+
+.region-switcher { position: absolute; top: 22px; left: 28px; z-index: 10; display: flex; gap: 10px; }
+.btn-region {
+    background: rgba(12, 19, 34, 0.6); color: var(--mute); border: 1px solid var(--mute);
+    padding: 6px 14px; border-radius: 20px; cursor: pointer; font: 700 .75rem system-ui;
+    letter-spacing: .1em; text-transform: uppercase; transition: 0.2s;
+}
+.btn-region:hover { background: rgba(255,255,255,0.1); }
+.btn-region.active { background: var(--walnut); color: #2a1620; border-color: var(--walnut); box-shadow: 0 0 10px rgba(217, 153, 138, 0.4); }
+
+header{ flex: 0 0 130px; position:relative; overflow:hidden; border-bottom:3px solid #d9998a; }
+header svg.hdr{position:absolute;inset:0;width:100%;height:100%}
+.title{position:relative;padding:15px 28px; max-width:400px; margin:0 auto; z-index:2; text-align: center;}
+.kicker{font:700 .78rem system-ui,sans-serif;letter-spacing:.25em;text-transform:uppercase;color:#f6c9b6;background:#0c1322b8;display:inline-block;padding:3px 10px;border-radius:20px}
+h1{margin:8px 0 0;font-size:clamp(2rem,5vw,3rem);line-height:1;color:var(--ink);text-shadow:0 2px 14px #000b}
+h1 em{color:#f0a98f;font-style:normal}h1 sup{font-size:.35em;color:var(--walnut);letter-spacing:.1em}
+.sig{position:absolute;right:22px;bottom:10px;z-index:3;font:italic 700 1.05rem Georgia,serif;letter-spacing:.12em;color:#fbe3d6;text-shadow:0 1px 6px #000c}
+
+main{
+    flex: 1; min-height: 0; display:grid; grid-template-columns:1fr 360px; gap:20px;
+    max-width:1200px; width:100%; margin:15px auto 10px; padding:0 20px;
+}
+@media(max-width:900px){main{grid-template-columns:1fr; overflow-y:auto;}}
+
+.card{background:var(--card);border:2px solid #d9998a88;border-radius:14px;box-shadow:0 8px 24px #0008,inset 0 0 0 4px var(--card),inset 0 0 0 5px #d9998a33;padding:15px}
+.mapcard{position:relative; overflow:hidden; display: flex; flex-direction: column;}
+.ribbon{position:absolute;top:14px;left:-45px;transform:rotate(-35deg);background:#d9998a;color:#2a1620;font:700 .72rem system-ui;letter-spacing:.2em;padding:5px 40px;z-index:2}
+
+#mapwrap{flex: 1; position:relative; min-height: 0;}
+svg#map{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+path{fill:var(--none);stroke:#141d31;stroke-width:.5;vector-effect:non-scaling-stroke; transition: fill 0.2s, filter 0.2s;}
+path.ok{fill:var(--green2)}
+path:hover{filter:brightness(.88); outline: none;}
+path.ok:hover{fill:var(--green)}
+
+path.bg{fill:#101a2c;stroke:#4a5c84;stroke-width:1.1;pointer-events:none}
+.bgl{font:700 12px system-ui,sans-serif;letter-spacing:.22em;fill:#6d80a8;pointer-events:none}
+
+#tip{position:absolute;pointer-events:none;background:#f0a98f;color:#2a1620;padding:4px 9px;border-radius:6px;font:.82rem system-ui;display:none;white-space:nowrap; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+.legend{display:flex;gap:16px;font:.8rem system-ui;color:var(--mute);margin-top:10px;align-items:center;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+aside{display:flex;flex-direction:column;gap:12px; overflow-y: auto; padding-right: 5px;}
+.tabs{display:grid;gap:8px}
+.tab{all:unset;cursor:pointer;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:12px;background:var(--card);border:2px solid #d9998a88;border-radius:12px;padding:8px 12px;box-shadow:0 4px 0 #0007;transition:.15s}
+.tab:hover{transform:translateY(-2px)}
+.tab.active{background:#f0a98f;color:#2a1620;transform:translateY(2px);box-shadow:0 1px 0 #8a5448}
+.tab .ic{font-size:1.7rem;text-align:center}.tab b{display:block;font-size:1.02rem}.tab small{font:.74rem system-ui;opacity:.75}
+.tab .pc{font-size:1.4rem;font-weight:700;color:var(--green)}.tab.active .pc{color:#1b4d38}
+
+.detail{text-align:center}.detail h2{margin:0 0 6px;font-size:1.15rem;color:var(--walnut)}
+.ring{width:160px;height:160px;margin:4px auto 10px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}.ring circle{fill:none;stroke-width:14}
+.ring .bg{stroke:var(--paper2)}.ring .fg{stroke:var(--green2);stroke-linecap:round;transition:stroke-dashoffset .8s}
+.ring .mid{position:absolute;inset:0;display:grid;place-content:center;font-size:1.8rem;font-weight:700;color:var(--green)}
+.ring .mid small{font:.7rem system-ui;color:var(--mute);text-align:center}
+.stat{display:flex;justify-content:space-between;padding:6px 4px;border-bottom:1px dashed #ffffff26;font-size:0.95rem}
+.stat span{color:var(--mute)}.stat b.left{color:var(--walnut2)}
+
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.b{font:inherit;background:var(--green2);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;box-shadow:0 3px 0 #1d5a46; transition: 0.2s;}
+button.b:active { transform: translateY(3px); box-shadow: 0 0 0 #1d5a46; }
+button.b.alt{background:var(--paper2);color:var(--ink);box-shadow:0 3px 0 #0008}
+button.b.alt:active { box-shadow: 0 0 0 #0008; }
+footer{flex: 0 0 20px; text-align:center; color:var(--mute); font:.78rem system-ui;}
+</style></head><body>
+
+<header>
+
+<svg class="hdr" viewBox="0 0 1200 270" preserveAspectRatio="xMidYMax slice"><defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1128"/><stop offset=".55" stop-color="#3a3560"/><stop offset="1" stop-color="#e3a392"/></linearGradient>
+<linearGradient id="litA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6b7a0"/><stop offset=".45" stop-color="#b9a3c2"/><stop offset="1" stop-color="#6d88bd"/></linearGradient>
+<linearGradient id="litB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a0b8"/><stop offset="1" stop-color="#46598a"/></linearGradient>
+<linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb6e0" stop-opacity="0"/><stop offset="1" stop-color="#9fb6e0" stop-opacity=".55"/></linearGradient>
+<linearGradient id="slope" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8effc"/><stop offset="1" stop-color="#5d739f"/></linearGradient>
+<filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="3" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 -.18"/></filter>
+</defs><rect width="1200" height="270" fill="url(#sky)"/><g filter="url(#rough)" opacity=".55"><polygon points="70,270 96,256 111,236 145,225 183,202 207,191 218,169 240,158 278,142 300,120 329,139 350,154 357,171 377,182 418,197 424,214 465,232 466,258 500,270" fill="#4b4f80"/><polygon points="300,120 329,139 350,154 357,171 377,182 418,197 424,214 465,232 466,258 500,270 360,240 358,210 341,180 329,150" fill="url(#litB)"/><polygon points="540,270 575,253 596,227 620,215 643,191 668,185 676,157 713,146 729,119 760,105 783,125 824,140 843,159 872,177 894,197 945,214 968,228 996,255 1020,270" fill="#4b4f80"/><polygon points="760,105 783,125 824,140 843,159 872,177 894,197 945,214 968,228 996,255 1020,270 849,237 828,204 809,171 793,138" fill="url(#litB)"/></g><g filter="url(#rough)"><polygon points="-80,270 -45,248 -39,240 7,220 21,206 40,183 66,171 94,149 129,143 150,120 167,140 192,158 219,167 232,180 261,202 275,218 301,241 319,260 350,270" fill="#2c3858"/><polygon points="150,120 167,140 192,158 219,167 232,180 261,202 275,218 301,241 319,260 350,270 216,240 204,210 187,180 179,150" fill="url(#litA)"/><polygon points="390,270 411,251 431,230 442,206 455,194 491,172 509,149 517,130 550,105 560,92 582,108 611,129 623,150 650,175 668,196 684,207 706,225 744,253 760,270" fill="#2a3556"/><polygon points="560,92 582,108 611,129 623,150 650,175 668,196 684,207 706,225 744,253 760,270 621,234 607,199 597,163 588,128" fill="url(#litA)"/><polygon points="680,270 700,250 741,217 760,193 793,163 807,137 853,110 873,85 895,59 930,38 953,59 970,84 999,115 1022,134 1057,166 1088,186 1107,217 1123,251 1160,270" fill="#27325a"/><polygon points="930,38 953,59 970,84 999,115 1022,134 1057,166 1088,186 1107,217 1123,251 1160,270 1001,224 983,177 973,131 952,84" fill="url(#litA)"/><polygon points="1030,270 1036,251 1074,229 1082,211 1087,201 1107,175 1122,165 1149,139 1157,135 1180,110 1188,129 1207,150 1226,167 1239,177 1244,193 1274,211 1270,241 1288,258 1310,270" fill="#2f3d66"/><polygon points="1180,110 1188,129 1207,150 1226,167 1239,177 1244,193 1274,211 1270,241 1288,258 1310,270 1216,238 1213,206 1200,174 1201,142" fill="url(#litA)"/></g><rect y="150" width="1200" height="120" fill="url(#fog)"/><path d="M0,270 L0,236 Q300,214 620,236 Q900,252 1200,176 L1200,270Z" fill="url(#slope)"/><path d="M360,270 Q700,262 820,236 Q900,222 860,200" stroke="#fff" stroke-width="2.2" fill="none" opacity=".8"/><rect width="1200" height="270" filter="url(#grain)" opacity=".25" style="mix-blend-mode:screen"/></svg>
+<div class="title">
+    <span class="kicker">Collection Wikimasters</span>
+    <h1 id="main-title">Nord <em>·</em> <sup>59</sup></h1>
+</div>
+<div class="sig">✦ Bralos</div>
+</header>
+
+<main>
+<div class="card mapcard"><div class="ribbon" id="ribbon-text">NORD</div>
+<div id="mapwrap"><svg id="map" viewBox="0 0 800 800"></svg><div id="tip"></div></div>
+<div class="legend"><span><i style="background:var(--green2)"></i>Acquise</span><span><i style="background:var(--none)"></i>À trouver</span><span>Molette : zoom · glisser : déplacer</span></div></div>
+
+<aside>
+<div class="tabs" id="tabs">
+ <button class="tab active" data-m="communes"><span class="ic">🏘️</span><span><b>Communes</b><small id="s-communes">–</small></span><span class="pc" id="p-communes">–</span></button>
+ <button class="tab" data-m="pop"><span class="ic">👥</span><span><b>Habitants</b><small id="s-pop">–</small></span><span class="pc" id="p-pop">–</span></button>
+ <button class="tab" data-m="sup"><span class="ic">⛰️</span><span><b>Superficie</b><small id="s-sup">–</small></span><span class="pc" id="p-sup">–</span></button>
+</div>
+
+<div class="card detail"><h2 id="dT">Communes</h2>
+<div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="fg" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/></svg><div class="mid"><span id="dPct">–</span><small>acquis</small></div></div>
+<div class="stat"><span>Acquis</span><b id="dOk">–</b></div>
+<div class="stat"><span>Total</span><b id="dTot">–</b></div>
+<div class="stat" style="border:0"><span>Restant</span><b class="left" id="dLeft">–</b></div></div>
+
+<div class="card"><div class="btns"><button class="b" onclick="loadRegion(activeRegion)">↻ Actualiser</button><button class="b alt" onclick="resetPanZoom()">Recentrer</button></div></div>
+</aside>
+</main>
+<footer><span style='color:#f0b9a0'>© Bralos</span> — <span id="footer-text">🏛️ Lille · 🏖️ Dunkerque · ⛏️ Bassin minier · 🍺 Flandre</span></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+    
+<script>
+    const collections = {
+        'nord': {
+            titre: "Nord", suffixe: "59",
+            csv: "https://docs.google.com/spreadsheets/d/1xP0BUNIjNwZ6EpptLXBLjPnYh1bXq9k_yDr3e5Ghzs8/gviz/tq?tqx=out:csv&sheet=Nord",
+            geo: "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/59-nord/communes-59-nord.geojson",
+            supDiv: 100,
+            hasBg: true, bgGeo: "https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson",
+            bgFilter: ['62', '80', '02'],
+            footer: "🏛️ Lille · 🏖️ Dunkerque · ⛏️ Bassin minier · 🍺 Flandre"
+        }
+    };
+
+    let mapData = {}; 
+    let globalStats = { com_acquis: 0, com_total: 0, hab_acquis: 0, hab_total: 0, sup_acquis: 0, sup_total: 0 };
+    let currentMode = 'communes';
+    let activeRegion = 'nord';
+
+    const svg = d3.select("#map");
+    const tip = d3.select("#tip");
+    
+    const zoom = d3.zoom().scaleExtent([1, 15]).on("zoom", (event) => { d3.select("#map g.zoom-layer").attr("transform", event.transform); });
+    svg.call(zoom);
+
+    // Initialisation nue, D3 s'occupera du centrage via fitExtent
+    const projection = d3.geoMercator();
+    const pathGenerator = d3.geoPath().projection(projection);
+
+    const formatNb = (num) => Math.round(num).toLocaleString('fr-FR');
+    const toNum = (v) => parseFloat(String(v === undefined ? '' : v).replace(/[\s\u00a0]/g, '').replace(',', '.')) || 0;
+    const calcPct = (acq, tot) => tot === 0 ? 0 : ((acq / tot) * 100);
+
+    function updateDisplay() {
+        let acq, tot, title;
+        if (currentMode === 'communes') { acq = globalStats.com_acquis; tot = globalStats.com_total; title = "Communes"; } 
+        else if (currentMode === 'pop') { acq = globalStats.hab_acquis; tot = globalStats.hab_total; title = "Habitants"; } 
+        else { acq = globalStats.sup_acquis; tot = globalStats.sup_total; title = "Superficie"; }
+
+        const pct = calcPct(acq, tot);
+        const pctStr = pct.toFixed(1).replace('.', ',');
+
+        document.getElementById('dT').innerText = title;
+        document.getElementById('dPct').innerText = pctStr + '%';
+        document.getElementById('dOk').innerText = formatNb(acq) + (currentMode === 'sup' ? ' km²' : '');
+        document.getElementById('dTot').innerText = formatNb(tot) + (currentMode === 'sup' ? ' km²' : '');
+        document.getElementById('dLeft').innerText = formatNb(tot - acq) + (currentMode === 'sup' ? ' km²' : '');
+        
+        document.getElementById('fg').style.strokeDashoffset = 263.9 - (pct / 100) * 263.9;
+
+        document.getElementById('s-communes').innerText = `${formatNb(globalStats.com_acquis)} / ${formatNb(globalStats.com_total)}`;
+        document.getElementById('p-communes').innerText = calcPct(globalStats.com_acquis, globalStats.com_total).toFixed(1).replace('.', ',') + '%';
+        document.getElementById('s-pop').innerText = `${formatNb(globalStats.hab_acquis)} / ${formatNb(globalStats.hab_total)}`;
+        document.getElementById('p-pop').innerText = calcPct(globalStats.hab_acquis, globalStats.hab_total).toFixed(1).replace('.', ',') + '%';
+        document.getElementById('s-sup').innerText = `${formatNb(globalStats.sup_acquis)} / ${formatNb(globalStats.sup_total)} km²`;
+        document.getElementById('p-sup').innerText = calcPct(globalStats.sup_acquis, globalStats.sup_total).toFixed(1).replace('.', ',') + '%';
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentMode = this.getAttribute('data-m');
+            updateDisplay();
+        });
+    });
+
+    window.resetPanZoom = function() {
+        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+    }
+
+    window.loadRegion = function(regionKey) {
+        activeRegion = regionKey;
+        const config = collections[regionKey];
+        document.getElementById('main-title').innerHTML = `${config.titre} <em>·</em> <sup>${config.suffixe}</sup>`;
+        document.getElementById('ribbon-text').innerText = config.titre.toUpperCase();
+        document.getElementById('footer-text').innerText = config.footer;
+
+        globalStats = { com_acquis: 0, com_total: 0, hab_acquis: 0, hab_total: 0, sup_acquis: 0, sup_total: 0 };
+        mapData = {};
+        svg.selectAll("*").remove(); 
+        
+        // Remise à zéro du zoom pour éviter le conflit
+        svg.call(zoom.transform, d3.zoomIdentity);
+
+        Papa.parse(config.csv, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                results.data.forEach(row => {
+                    const idRaw = row.insee || row.id || row.nom;
+                    if(!idRaw) return;
+                    
+                    const acquis = parseInt(row.acquis) === 1;
+                    const pop = toNum(row.population);
+                    const sup = toNum(row.superficie) / config.supDiv;
+
+                    globalStats.com_total++;
+                    globalStats.hab_total += pop;
+                    globalStats.sup_total += sup;
+                    if(acquis) { globalStats.com_acquis++; globalStats.hab_acquis += pop; globalStats.sup_acquis += sup; }
+                    
+                    mapData[idRaw.toString().trim().toLowerCase()] = { acquis: acquis, pop: pop, sup: sup, nom: row.nom };
+                });
+
+                updateDisplay();
+
+                if(config.hasBg) {
+                    Promise.all([d3.json(config.bgGeo), d3.json(config.geo)]).then(([bgGeo, mainGeo]) => {
+                        const filteredBg = bgGeo.features.filter(f => config.bgFilter.includes(f.properties.code));
+                        drawSVG(mainGeo, filteredBg);
+                    });
+                } else {
+                    d3.json(config.geo).then(mainGeo => drawSVG(mainGeo, null));
+                }
+            }
+        });
+    }
+
+    function drawSVG(mainGeo, bgGeo) {
+        // C'EST ICI LA CORRECTION MAGIQUE : On force la projection à tenir dans la boîte de 800x800, avec 40px de marge
+        projection.fitExtent([[40, 40], [760, 760]], mainGeo);
+
+        const g = svg.append("g").attr("class", "zoom-layer");
+
+        if(bgGeo) {
+            g.selectAll("path.bg").data(bgGeo).enter().append("path").attr("d", pathGenerator).attr("class", "bg");
+            g.selectAll("text.bgl").data(bgGeo).enter().append("text").attr("class", "bgl")
+             .attr("transform", d => `translate(${pathGenerator.centroid(d)})`)
+             .attr("text-anchor", "middle").attr("dy", ".35em").text(d => d.properties.nom);
+        }
+
+        g.selectAll("path.commune").data(mainGeo.features).enter().append("path").attr("d", pathGenerator)
+         .attr("class", d => {
+             const geoId = d.properties.insee || d.properties.id || d.properties.code || d.properties.LAU2_CODE;
+             const geoNom = d.properties.nom || d.properties.name || d.properties.NAME_2 || d.properties.COMMUNE;
+             const keyId = geoId ? geoId.toString().trim().toLowerCase() : null;
+             const keyNom = geoNom ? geoNom.toString().trim().toLowerCase() : null;
+             const match = mapData[keyId] || mapData[keyNom];
+             return "commune " + (match && match.acquis ? "ok" : "");
+         })
+         .on("mouseover", function(event, d) {
+             const geoId = d.properties.insee || d.properties.id || d.properties.code || d.properties.LAU2_CODE;
+             const geoNom = d.properties.nom || d.properties.name || d.properties.NAME_2 || d.properties.COMMUNE;
+             const match = mapData[geoId ? geoId.toString().trim().toLowerCase() : null] || mapData[geoNom ? geoNom.toString().trim().toLowerCase() : null] || { pop: 0, sup: 0 };
+             const displayName = match.nom || geoNom || "Inconnu";
+             tip.style("display", "block").html(`<b>${displayName}</b><br>${formatNb(match.pop)} hab.<br>${formatNb(match.sup)} km²`);
+         })
+         .on("mousemove", function(event) {
+             const cr = document.getElementById('mapwrap').getBoundingClientRect();
+             tip.style("left", (event.clientX - cr.left + 15) + "px").style("top", (event.clientY - cr.top + 15) + "px");
+         })
+         .on("mouseout", function() { tip.style("display", "none"); });
+    }
+
+    loadRegion('nord');
+
+</script>
+</body>
+</html>
